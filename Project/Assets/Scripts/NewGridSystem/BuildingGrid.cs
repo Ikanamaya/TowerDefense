@@ -1,15 +1,12 @@
-using System.Collections;
-using System.Drawing;
-using System.Runtime.CompilerServices;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 
 public class BuildingGrid : MonoBehaviour
 {
-    [SerializeField] private Vector2Int gridSize = new Vector2Int(10, 10);
-    private Building[,] grid;
-    private Building flyingBuilding;
+    [SerializeField] private Vector2Int gridSize = new Vector2Int(30, 30);
+    private Tower[,] grid;
+    [SerializeField] private Tower tower;
+    [SerializeField] private GameObject gridShader;
+    private FlyingBuilding flyingTower;
     private Camera mainCamera;
     private Plane groundPlane;
     private int x, y;
@@ -17,7 +14,7 @@ public class BuildingGrid : MonoBehaviour
 
     private void Awake()
     {
-        grid = new Building[gridSize.x, gridSize.y];
+        grid = new Tower[gridSize.x, gridSize.y];
         mainCamera = Camera.main;
     }
 
@@ -25,28 +22,35 @@ public class BuildingGrid : MonoBehaviour
     {
         groundPlane = new Plane(Vector2.up, Vector3.zero);
         isAvailable = true;
+        gridShader.SetActive(false);
     }
 
     private void Update()
     {
-        if (flyingBuilding != null)
+        if (flyingTower != null)
         {
             RoundPosition();
             if (isAvailable && Input.GetMouseButtonDown(0))
             {
                 PlaceBuilding(x, y);
             }
+            if (Input.GetMouseButtonDown(1))
+            {
+                DestroyBuilding(flyingTower);
+            }
         }
     }
 
-    private void SelectBuilding(Building buildingPrefab)
+    public void SelectBuilding(FlyingBuilding buildingPrefab)
     {
-        if (flyingBuilding != null)
+        if (flyingTower != null)
         {
-            Destroy(flyingBuilding.gameObject);
+            DestroyBuilding(flyingTower);
         }
 
-        flyingBuilding = Instantiate(buildingPrefab);
+        gridShader.SetActive(true);
+        flyingTower = Instantiate(buildingPrefab);
+
     }
 
     private void RoundPosition()
@@ -58,7 +62,7 @@ public class BuildingGrid : MonoBehaviour
             x = Mathf.RoundToInt(worldPosition.x);
             y = Mathf.RoundToInt(worldPosition.z);
 
-            if ((x < 0 || x > gridSize.x - flyingBuilding.size.x) || (y < 0 || y > gridSize.y - flyingBuilding.size.y))
+            if ((x < 0 || x > gridSize.x - flyingTower.size.x) || (y < 0 || y > gridSize.y - flyingTower.size.y))
             {
                 isAvailable = false;
             }
@@ -67,17 +71,17 @@ public class BuildingGrid : MonoBehaviour
                 isAvailable = true;
             }
             if (isAvailable && isOccupied(x, y)) isAvailable = false;
-            
-            flyingBuilding.transform.position = new Vector3(x, 0, y);
-            flyingBuilding.SetTransparent(isAvailable);
+
+            flyingTower.transform.position = new Vector3(x, 0, y);
+            flyingTower.SetTransparent(isAvailable); 
         }
     }
 
     private bool isOccupied(int placeX, int placeY)
     {
-        for (int x = 0; x < flyingBuilding.size.x; x++)
+        for (int x = 0; x < flyingTower.size.x; x++)
         {
-            for (int y = 0; y < flyingBuilding.size.y; y++)
+            for (int y = 0; y < flyingTower.size.y; y++)
             {
                 if(grid[x + placeX, y + placeY] != null) return true;
             }
@@ -88,16 +92,22 @@ public class BuildingGrid : MonoBehaviour
 
     private void PlaceBuilding(int placeX, int placeY)
     {
-        for (int x = 0; x < flyingBuilding.size.x; x++)
+        for (int x = 0; x < flyingTower.size.x; x++)
         {
-            for (int y = 0; y < flyingBuilding.size.y; y++)
+            for (int y = 0; y < flyingTower.size.y; y++)
             {
-                grid[x + placeX, y + placeY] = flyingBuilding;
+                grid[x + placeX, y + placeY] = tower;
             }
         }
-        Instantiate(flyingBuilding);
-        flyingBuilding.SetNormal();
-        flyingBuilding = null;
+        Instantiate(tower, new Vector3(flyingTower.transform.position.x, flyingTower.transform.position.y, flyingTower.transform.position.z), Quaternion.identity);
+        DestroyBuilding(flyingTower);
+        gridShader.SetActive(false);
+        flyingTower = null;
+    }
+
+    private void DestroyBuilding(FlyingBuilding buildingPrefab)
+    {
+        Destroy(buildingPrefab.gameObject);
     }
 
 }
