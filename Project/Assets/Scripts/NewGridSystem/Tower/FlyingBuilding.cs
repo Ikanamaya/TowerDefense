@@ -3,11 +3,29 @@ using UnityEngine;
 public class FlyingBuilding : MonoBehaviour
 {
     [SerializeField] public Vector2Int size = Vector2Int.one;
+    [SerializeField] private LayerMask pathwayLayer;
+    [SerializeField] private GameObject raycastPoint;
     public Renderer parentRenderer;
     private Component[] childrenRenderer;
+    public bool isColliding { get; private set; }
     private void Awake()
     {
         childrenRenderer = parentRenderer.GetComponentsInChildren(typeof(Renderer));
+    }
+
+    private void Start()
+    {
+        isColliding = false;
+    }
+
+    private void Update()
+    {
+        CheckForCollision();
+    }
+
+    private void CheckForCollision()
+    {
+        isColliding = Physics.Raycast(raycastPoint.transform.position, Vector3.down, Mathf.Infinity, pathwayLayer);
     }
 
     public void SetTransparent(bool available)

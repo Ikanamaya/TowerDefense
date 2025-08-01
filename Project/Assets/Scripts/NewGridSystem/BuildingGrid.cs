@@ -62,7 +62,7 @@ public class BuildingGrid : MonoBehaviour
             x = Mathf.RoundToInt(worldPosition.x);
             y = Mathf.RoundToInt(worldPosition.z);
 
-            if ((x < 0 || x > gridSize.x - flyingTower.size.x) || (y < 0 || y > gridSize.y - flyingTower.size.y))
+            if ((x < 0 || x > gridSize.x - flyingTower.size.x) || (y < 0 || y > gridSize.y - flyingTower.size.y) || flyingTower.isColliding)
             {
                 isAvailable = false;
             }

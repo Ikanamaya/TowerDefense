@@ -22,8 +22,6 @@ public class Bullet : MonoBehaviour
         MoveToTarget();
     }
 
-    //public void SetTarget() => enemy = tower.target;
-
     private void MoveToTarget()
     {
         dir = enemy.transform.position - transform.position;
